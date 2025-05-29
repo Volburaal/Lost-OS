@@ -1,0 +1,26 @@
+{
+  "name": "lost-os",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/deploy-commnds.js && node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Volburaal/Lost-OS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Volburaal/Lost-OS/issues"
+  },
+  "homepage": "https://github.com/Volburaal/Lost-OS#readme",
+  "description": "",
+  "dependencies": {
+    "discord.js": "^14.19.3",
+    "dotenv": "^16.5.0",
+    "nodemon": "^3.1.10"
+  }
+}
