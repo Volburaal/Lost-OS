@@ -63,6 +63,15 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
+const MESSAGE_WINDOW_MS = 30000; // 30 seconds
+const MESSAGE_THRESHOLD = 10;    // 10 messages required in window
+const COOLDOWN_MS = 60000;       // 60 seconds cooldown period
+const MIN_MESSAGE_LENGTH = 35;   // Minimum message length to trigger nerd emoji chance
+const MAX_CHANCE = 15;
+
+let lastTriggered = 0;
+let nerdEmojiChance = 5;
+
 const activeMessages = []; // Array of { timestamp, userId }
 const activeUsers = new Set();
 const messagePool = [
@@ -74,18 +83,18 @@ const messagePool = [
   "gulags looking real empty, be a shame if i had to send you there."
 ];
 
-const MESSAGE_WINDOW_MS = 30000;
-const MESSAGE_THRESHOLD = 10;
-const COOLDOWN_MS = 60000;
-let lastTriggered = 0;
-
 client.on('messageCreate', async message => {
     if (message.author.bot) return;
 
     const now = Date.now();
 
-    if (message.content.length > 35) {
-        await message.reply('🤓☝');
+    if (message.content.length >= MIN_MESSAGE_LENGTH) {
+        if (Math.random() * 100 < nerdEmojiChance) {
+            await message.reply('🤓☝');
+        }
+        nerdEmojiChance = Math.min(nerdEmojiChance + 2, MAX_CHANCE);
+    } else {
+        nerdEmojiChance = 5;
     }
 
     const responses = {
