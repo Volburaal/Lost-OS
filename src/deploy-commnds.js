@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const commands = [
   new SlashCommandBuilder().setName('ping').setDescription('Check bot latency'),
+  new SlashCommandBuilder().setName('status').setDescription('Check API status'),
   new SlashCommandBuilder().setName('clear').setDescription('Delete messages')
     .addIntegerOption(opt => opt.setName('amount').setDescription('Number to delete').setRequired(true))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
