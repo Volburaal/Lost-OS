@@ -1,30 +1,6 @@
 const { Client, GatewayIntentBits, Partials, EmbedBuilder, ActivityType } = require('discord.js');
 require('dotenv').config();
 
-const fetch = require('node-fetch');
-
-const CHECK_INTERVAL = 30_000;
-let lastPingTime = 0;
-const apisToCheck = [
-  { name: 'Journal', url: 'https://journal-backend-x9w1.onrender.com/', status: 'Unknown' },
-  { name: 'QuickSeats', url: 'https://quickseats-backend-8651.onrender.com/', status: 'Unknown' },
-  { name: 'Portfolio', url: 'https://chaotiz.vercel.app/', status: 'Unknown' },
-  { name: 'The Hive', url: 'https://bananafactory.edu/', status: 'Unknown' }
-];
-
-setInterval(async () => {
-  for (const api of apisToCheck) {
-    try {
-      const res = await fetch(api.url, { method: 'GET', timeout: 5000 });
-      api.status = `Online`;
-    } catch(error) {
-      api.status = 'Offline';
-    }
-  }
-  lastPingTime = Date.now();
-}, CHECK_INTERVAL);
-
-
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -85,26 +61,18 @@ client.on('interactionCreate', async interaction => {
     await channel.send(msg);
     await interaction.reply({ content: 'Sent.', ephemeral: true });
   }
-
-  if (commandName === 'status') {
-    const now = Date.now();
-    const secondsAgo = lastPingTime ? Math.floor((now - lastPingTime) / 1000) : 'N/A';
-    const statusList = apisToCheck.map(api => `**${api.name}**: ${api.status}`).join('\n');
-    await interaction.reply({ content: `API Status:\n${statusList}\n\nLast ping was ${secondsAgo} seconds ago.`, ephemeral: true });
-  }
-
 });
 
-const MESSAGE_WINDOW_MS = 30000;
-const MESSAGE_THRESHOLD = 10;
-const COOLDOWN_MS = 60000;
-const MIN_MESSAGE_LENGTH = 35;
+const MESSAGE_WINDOW_MS = 30000; // 30 seconds
+const MESSAGE_THRESHOLD = 10;    // 10 messages required in window
+const COOLDOWN_MS = 60000;       // 60 seconds cooldown period
+const MIN_MESSAGE_LENGTH = 35;   // Minimum message length to trigger nerd emoji chance
 const MAX_CHANCE = 15;
 
 let lastTriggered = 0;
-let nerdEmojiChance = 1;
+let nerdEmojiChance = 5;
 
-const activeMessages = [];
+const activeMessages = []; // Array of { timestamp, userId }
 const activeUsers = new Set();
 const messagePool = [
   "get on all fours and start barking.",
@@ -123,13 +91,10 @@ client.on('messageCreate', async message => {
     if (message.content.length >= MIN_MESSAGE_LENGTH) {
         if (Math.random() * 100 < nerdEmojiChance) {
             await message.reply('🤓☝');
-            nerdEmojiChance = 1
         }
-        else{
-          nerdEmojiChance = Math.min(nerdEmojiChance + 0.5, MAX_CHANCE);
-        }
+        nerdEmojiChance = Math.min(nerdEmojiChance + 2, MAX_CHANCE);
     } else {
-        nerdEmojiChance = 1;
+        nerdEmojiChance = 5;
     }
 
     const responses = {
