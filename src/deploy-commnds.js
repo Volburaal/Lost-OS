@@ -14,9 +14,6 @@ const commands = [
     .addUserOption(opt => opt.setName('target').setDescription('unfortunate soul').setRequired(true))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
 
-  new SlashCommandBuilder().setName('togglehealthcheck').setDescription('Enable or Disable API Health Checks.'),  
-  new SlashCommandBuilder().setName('status').setDescription('Check API Status.'),  
-
   new SlashCommandBuilder().setName('announce').setDescription('Admin: Send an announcement')
     .addStringOption(opt => opt.setName('message').setDescription('Announcement content').setRequired(true))
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
