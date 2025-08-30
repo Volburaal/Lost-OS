@@ -1,28 +1,50 @@
-const { Client, GatewayIntentBits, Partials, EmbedBuilder, ActivityType } = require('discord.js');
-require('dotenv').config();
+import { Client, GatewayIntentBits, Partials, EmbedBuilder, ActivityType } from 'discord.js'
+import dotenv from 'dotenv';
+import fetch from 'node-fetch'
 
-const fetch = require('node-fetch');
+dotenv.config();
 
-const CHECK_INTERVAL = 30_000;
+const CHECK_INTERVAL = 10_000;
+
+const RESTRICTED_START_HOUR = 20;
+const RESTRICTED_END_HOUR = 8;
+
+let healthCheckSleep = false
+
+let healthCheckToggle = true
+
 let lastPingTime = 0;
 const apisToCheck = [
   { name: 'Journal', url: 'https://journal-backend-x9w1.onrender.com/', status: 'Unknown' },
   { name: 'QuickSeats', url: 'https://quickseats-backend-8651.onrender.com/', status: 'Unknown' },
   { name: 'Portfolio', url: 'https://chaotiz.vercel.app/', status: 'Unknown' },
+  { name: 'Pinguin', url: 'https://pingsquad-s71w.onrender.com/', status: 'Unknown' },
   { name: 'The Hive', url: 'https://bananafactory.edu/', status: 'Unknown' }
 ];
 
+
+
 setInterval(async () => {
+  const currentHour = new Date().getHours();
+  healthCheckSleep = currentHour >= RESTRICTED_START_HOUR || currentHour < RESTRICTED_END_HOUR
+  console.log("Checking Health")
+  if(healthCheckSleep || !healthCheckToggle){
+    return;
+  }
+  console.log("Sending Calls")
   for (const api of apisToCheck) {
     try {
-      const res = await fetch(api.url, { method: 'GET', timeout: 5000 });
+      const res = await fetch(api.url, { method: 'GET', timeout: 5000});
+      console.log(api);
       api.status = `Online`;
     } catch(error) {
-      api.status = 'Offline';
+      console.log(error)
+      api.status = '------';
     }
   }
   lastPingTime = Date.now();
 }, CHECK_INTERVAL);
+
 
 
 const client = new Client({
@@ -90,13 +112,37 @@ client.on('interactionCreate', async interaction => {
     const now = Date.now();
     const secondsAgo = lastPingTime ? Math.floor((now - lastPingTime) / 1000) : 'N/A';
     const statusList = apisToCheck.map(api => `**${api.name}**: ${api.status}`).join('\n');
+    if(!healthCheckToggle){
+      await interaction.reply({ content: `API health checks are disabled.\n\nLast ping was ${secondsAgo} seconds ago.`, ephemeral: true });
+      return
+    }
+    if(healthCheckSleep){
+      await interaction.reply({ content: `APIs are sleeping (khaa memememmeme, khaaaaa mememememem)\n\nLast ping was ${secondsAgo} seconds ago.`, ephemeral: true });
+      return
+    }
     await interaction.reply({ content: `API Status:\n${statusList}\n\nLast ping was ${secondsAgo} seconds ago.`, ephemeral: true });
+  }
+
+  if (commandName === 'togglehealthcheck') {
+    if (interaction.user.id != 667318305689829399){
+      const replyPool = [
+        "you cant do that.",
+        "fuck off",
+        "im going to shit yourself",
+        "woah woah, you cant do that"
+      ];
+      const reply = replyPool[Math.floor(Math.random() * replyPool.length)]
+      await interaction.reply({ content: reply, ephemeral: true});
+      return;
+    }
+    healthCheckToggle = !healthCheckToggle
+    await interaction.reply({content: `API Health checks are now ${healthCheckToggle? "enabled": "disabled"}`})
   }
 
 });
 
 const MESSAGE_WINDOW_MS = 30000;
-const MESSAGE_THRESHOLD = 10;
+const MESSAGE_THRESHOLD = 7;
 const COOLDOWN_MS = 60000;
 const MIN_MESSAGE_LENGTH = 35;
 const MAX_CHANCE = 15;
